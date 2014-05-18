@@ -83,24 +83,16 @@
 			children = (
 				1CE9C4A71928D1F700994269 /* AppDelegate.h */,
 				1CE9C4A81928D1F700994269 /* AppDelegate.m */,
-				1CE9C4AA1928D1F700994269 /* Main_iPhone.storyboard */,
-				1CE9C4AD1928D1F700994269 /* Main_iPad.storyboard */,
-				1CE9C4B01928D1F700994269 /* ViewController.h */,
-				1CE9C4B11928D1F700994269 /* ViewController.m */,
 				1CE9C4B31928D1F700994269 /* Images.xcassets */,
-				1CE9C49F1928D1F700994269 /* Supporting Files */,
-			);
-			path = ImgurHTTPClient;
-			sourceTree = "<group>";
-		};
-		1CE9C49F1928D1F700994269 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
 				1CE9C4A01928D1F700994269 /* Info.plist */,
 				1CE9C4A41928D1F700994269 /* main.m */,
+				1CE9C4AD1928D1F700994269 /* Main_iPad.storyboard */,
+				1CE9C4AA1928D1F700994269 /* Main_iPhone.storyboard */,
 				1CE9C4A61928D1F700994269 /* Prefix.pch */,
+				1CE9C4B01928D1F700994269 /* ViewController.h */,
+				1CE9C4B11928D1F700994269 /* ViewController.m */,
 			);
-			name = "Supporting Files";
+			path = ImgurHTTPClient;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
