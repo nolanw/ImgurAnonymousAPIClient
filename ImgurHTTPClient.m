@@ -4,22 +4,20 @@
 //  Public domain. https://github.com/nolanw/ImgurHTTPClient
 
 #import "ImgurHTTPClient.h"
-
-@interface ImgurHTTPClient ()
-
-@property (strong, nonatomic) NSURLSession *URLSession;
-
-@end
+#import <AFHTTPSessionManager.h>
 
 @implementation ImgurHTTPClient
 {
-    NSURLSession *_URLSession;
+    AFHTTPSessionManager *_HTTPSession;
 }
 
 - (id)initWithClientID:(NSString *)clientID
 {
     if ((self = [super init])) {
         _clientID = clientID;
+        _HTTPSession = [[AFHTTPSessionManager alloc] initWithBaseURL:[NSURL URLWithString:@"https://api.imgur.com/3/"]
+                                                sessionConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+        [self updateDefaultHeaders];
     }
     return self;
 }
@@ -31,11 +29,14 @@
 
 - (void)setClientID:(NSString *)clientID
 {
-    NSString *oldClientID = _clientID;
     _clientID = [clientID copy];
-    if (!(oldClientID == clientID || [oldClientID isEqualToString:clientID])) {
-        _URLSession = nil;
-    }
+    [self updateDefaultHeaders];
+}
+
+- (void)updateDefaultHeaders
+{
+    [_HTTPSession.requestSerializer setValue:[NSString stringWithFormat:@"Client-ID %@", self.clientID]
+                          forHTTPHeaderField:@"Authorization"];
 }
 
 + (instancetype)client
@@ -44,7 +45,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        // Check both the main bundle and this class's bundle for the client ID. This can help run tests or other times when the app isn't the main bundle.
+        // Check both the main bundle and this class's bundle for the client ID. This can help when running tests or doing other things when the app isn't the main bundle.
         NSBundle *mainBundle = [NSBundle mainBundle];
         NSString *clientID = [mainBundle objectForInfoDictionaryKey:ImgurHTTPClientIDKey];
         if (!clientID) {
@@ -57,111 +58,134 @@
     return client;
 }
 
-- (NSURLSession *)URLSession
+- (NSURLSessionDataTask *)uploadImageData:(NSData *)data
+                             withFilename:(NSString *)filename
+                                    title:(NSString *)title
+                        completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    if (_URLSession) return _URLSession;
-    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    configuration.HTTPAdditionalHeaders = @{ @"Authorization": [NSString stringWithFormat:@"Client-ID %@", self.clientID] };
-    _URLSession = [NSURLSession sessionWithConfiguration:configuration];
-    return _URLSession;
+    NSMutableDictionary *parameters = [NSMutableDictionary new];
+    if (filename) {
+        parameters[@"filename"] = filename;
+    }
+    if (title) {
+        parameters[@"title"] = title;
+    }
+    return [self resumedUploadTaskWithParameters:parameters bodyBlock:^(id <AFMultipartFormData> formData) {
+        [formData appendPartWithFormData:data name:@"image"];
+    } completionHandler:completionHandler];
 }
 
-- (NSProgress *)uploadImageData:(NSData *)data
-                   withFilename:(NSString *)filename
-                          title:(NSString *)title
-              completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
+- (NSURLSessionDataTask *)uploadImageFile:(NSURL *)fileURL
+                                withTitle:(NSString *)title
+                        completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    NSProgress *progress = [NSProgress progressWithTotalUnitCount:1];
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api.imgur.com/3/image.json"]];
-    request.HTTPMethod = @"POST";
-    NSURLSessionUploadTask *task = [self.URLSession uploadTaskWithRequest:request fromData:data completionHandler:^(NSData *responseData, NSURLResponse *response, NSError *error) {
+    NSMutableDictionary *parameters = [NSMutableDictionary new];
+    if (title) {
+        parameters[@"title"] = title;
+    }
+    return [self resumedUploadTaskWithParameters:parameters bodyBlock:^(id <AFMultipartFormData> formData) {
+        NSError *error;
+        BOOL ok = [formData appendPartWithFileURL:fileURL name:@"image" error:&error];
+        if (!ok) {
+            if (completionHandler) {
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientInvalidImage
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"The image file would not upload",
+                                                    NSUnderlyingErrorKey: error }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(nil, error);
+                });
+            }
+        }
+    } completionHandler:completionHandler];
+}
+
+- (NSURLSessionDataTask *)resumedUploadTaskWithParameters:(NSDictionary *)parameters
+                                                bodyBlock:(void (^)(id <AFMultipartFormData> formData))bodyBlock
+                                        completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
+{
+    return [_HTTPSession POST:@"image.json"
+                   parameters:parameters
+    constructingBodyWithBlock:bodyBlock
+                      success:^(NSURLSessionDataTask *task, NSDictionary *responseObject)
+    {
         if (!completionHandler) return;
         
-        if (error) {
-            // TODO wrap in our error
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(nil, error);
-            });
+        if (![responseObject isKindOfClass:[NSDictionary class]]) {
+            NSError *error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                                 code:ImgurHTTPClientUnreadableResponseError
+                                             userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
+                                                         ImgurHTTPClientDeveloperDescriptionKey: @"response JSON was not a dictionary" }];
+            completionHandler(nil, error);
             return;
         }
         
-        NSDictionary *responseInfo = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&error];
-        if (!responseInfo) {
-            // TODO wrap in our error
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(nil, error);
-            });
-            return;
-        }
-        if (![responseInfo isKindOfClass:[NSDictionary class]]) {
-            // TODO clarify error
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(nil, [NSError errorWithDomain:ImgurHTTPClientErrorDomain code:ImgurHTTPClientUnknownError userInfo:nil]);
-            });
-            return;
-        }
-        
-        NSInteger HTTPStatusCode = ((NSHTTPURLResponse *)response).statusCode;
-        if (HTTPStatusCode != 200) {
-            if (HTTPStatusCode == 403) {
-                NSString *description = @"Invalid client ID";
-                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain code:ImgurHTTPClientInvalidClientIDError userInfo:@{ NSLocalizedDescriptionKey: description }];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, error);
-                });
-            }
-            
-            // TODO handle other expected errors
-            
-            else {
-                NSString *description = [NSString stringWithFormat:@"Unexpected HTTP status code: %ld", (long)HTTPStatusCode];
-                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain code:ImgurHTTPClientUnknownError userInfo:@{ NSLocalizedDescriptionKey: description }];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(nil, error);
-                });
-            }
-            return;
-        }
-        
-        NSDictionary *data = responseInfo[@"data"];
+        NSDictionary *data = responseObject[@"data"];
         if (![data isKindOfClass:[NSDictionary class]]) {
-            NSString *description = @"Unexpected response data";
-            error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain code:ImgurHTTPClientUnknownError userInfo:@{ NSLocalizedDescriptionKey: description }];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(nil, error);
-            });
+            NSError *error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                                 code:ImgurHTTPClientUnreadableResponseError
+                                             userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
+                                                         ImgurHTTPClientDeveloperDescriptionKey: @"response JSON for 'data' key was not a dictionary" }];
+            completionHandler(nil, error);
             return;
         }
         
+        NSURL *URL;
         NSString *link = data[@"link"];
-        if (![link isKindOfClass:[NSString class]]) {
-            NSString *description = @"Unexpected response link";
-            error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain code:ImgurHTTPClientUnknownError userInfo:@{ NSLocalizedDescriptionKey: description }];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(nil, error);
-            });
+        if ([link isKindOfClass:[NSString class]]) {
+            URL = [NSURL URLWithString:link];
+        }
+        if (!URL) {
+            NSError *error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                                 code:ImgurHTTPClientUnreadableResponseError
+                                             userInfo:@{ NSLocalizedDescriptionKey: @"Unexpected response link",
+                                                         ImgurHTTPClientDeveloperDescriptionKey: @"response JSON for ['data']['link'] did not represent a URL" }];
+            completionHandler(nil, error);
         }
         
-        NSURL *URL = [NSURL URLWithString:link];
+        completionHandler(URL, nil);
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        if (!completionHandler) return;
         
-        progress.completedUnitCount = 1;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(URL, nil);
-        });
+        // https://api.imgur.com/errorhandling
+        NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
+        switch (response.statusCode) {
+            case 400:
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientInvalidImage
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"The image was rejected by Imgur",
+                                                    ImgurHTTPClientDeveloperDescriptionKey: @"see valid image types at https://imgur.com/faq#types" }];
+                break;
+                
+            case 403:
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientInvalidClientIDError
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"This application is not yet configured to upload images to Imgur",
+                                                    ImgurHTTPClientDeveloperDescriptionKey: @"missing or invalid client ID" }];
+                break;
+                
+            case 429:
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientRateLimitExceededError
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"Too many images were uploaded recently" }];
+                break;
+                
+            case 500:
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientAPIUnexplainedError
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"Imgur is having problems" }];
+                break;
+                
+            default:
+                error = [NSError errorWithDomain:ImgurHTTPClientErrorDomain
+                                            code:ImgurHTTPClientUnknownError
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"An unknown error occurred",
+                                                    NSUnderlyingErrorKey: error }];
+                break;
+        }
+        
+        completionHandler(nil, error);
     }];
-    
-    progress.cancellationHandler = ^{
-        [task cancel];
-    };
-    
-    [task resume];
-    return progress;
-}
-
-- (NSProgress *)uploadImageFile:(NSURL *)fileURL withTitle:(NSString *)title completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
-{
-    return nil;
 }
 
 @end
@@ -169,3 +193,5 @@
 NSString * const ImgurHTTPClientIDKey = @"ImgurHTTPClientID";
 
 NSString * const ImgurHTTPClientErrorDomain = @"ImgurHTTPClientError";
+
+NSString * const ImgurHTTPClientDeveloperDescriptionKey = @"ImgurHTTPClient Developer Description";

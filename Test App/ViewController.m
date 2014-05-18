@@ -12,7 +12,7 @@
 @property (strong, nonatomic) UIImage *image;
 @property (strong, nonatomic) NSURL *URL;
 
-@property (strong, nonatomic) NSProgress *uploadProgress;
+@property (strong, nonatomic) NSURLSessionDataTask *uploadTask;
 
 @property (weak, nonatomic) IBOutlet UIButton *chooseImageButton;
 @property (weak, nonatomic) IBOutlet UIButton *uploadButton;
@@ -33,7 +33,7 @@
     
     self.uploadButton.enabled = !!self.image;
     
-    self.uploadingHUD.hidden = !self.uploadProgress;
+    self.uploadingHUD.hidden = !self.uploadTask;
     
     [self.URLButton setTitle:self.URL.absoluteString forState:UIControlStateNormal];
     self.URLButton.enabled = !!self.URL;
@@ -73,9 +73,9 @@
     self.URL = nil;
     NSData *data = UIImagePNGRepresentation(self.image);
     __weak __typeof__(self) weakSelf = self;
-    self.uploadProgress = [[ImgurHTTPClient client] uploadImageData:data withFilename:nil title:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
+    self.uploadTask = [[ImgurHTTPClient client] uploadImageData:data withFilename:nil title:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
         __typeof__(self) self = weakSelf;
-        self.uploadProgress = nil;
+        self.uploadTask = nil;
         if (error) {
             UIAlertView *alert = [UIAlertView new];
             alert.title = @"Error Uploading Image";
@@ -92,7 +92,7 @@
 
 - (IBAction)cancelUpload:(id)sender
 {
-    [self.uploadProgress cancel];
+    [self.uploadTask cancel];
 }
 
 - (IBAction)openURLInSafari:(id)sender

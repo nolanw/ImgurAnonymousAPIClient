@@ -35,12 +35,12 @@
  * @param title             An optional title for the uploaded image. The title is visible on the Imgur website. May be nil.
  * @param completionHandler A block to call after uploading the image data, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurHTTPClientErrorDomain describing any failure. The completionHandler is always called on the main thread.
  *
- * @return An NSProgress object that can be used to cancel the upload.
+ * @return The resumed NSURLSessionDataTask which can be cancelled or suspended as needed.
  */
-- (NSProgress *)uploadImageData:(NSData *)data
-                   withFilename:(NSString *)filename
-                          title:(NSString *)title
-              completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
+- (NSURLSessionDataTask *)uploadImageData:(NSData *)data
+                             withFilename:(NSString *)filename
+                                    title:(NSString *)title
+                        completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 /**
  * Anonymously uploads an image from a file to Imgur.
@@ -49,11 +49,11 @@
  * @param title             An optional title for the uploaded image. The title is visible on the Imgur website. May be nil.
  * @param completionHandler A block to call after uploading the image data, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurHTTPClientErrorDomain describing any failure. The completion handler is always called on the main thread.
  *
- * @return An NSProgress object that can be used to cancel the upload.
+ * @return The resumed NSURLSessionDataTask which can be cancelled or suspended as needed.
  */
-- (NSProgress *)uploadImageFile:(NSURL *)fileURL
-                      withTitle:(NSString *)title
-              completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
+- (NSURLSessionDataTask *)uploadImageFile:(NSURL *)fileURL
+                                withTitle:(NSString *)title
+                        completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 @end
 
@@ -70,9 +70,9 @@ extern NSString * const ImgurHTTPClientErrorDomain;
 typedef NS_ENUM(NSInteger, ImgurHTTPClientErrorCodes) {
     
     /**
-     * An unexpected error with the Imgur service.
+     * An error without a specific code. The error's userInfo may have an elucidating value for NSUnderlyingErrorKey.
      */
-    ImgurHTTPClientUnknownError = 500,
+    ImgurHTTPClientUnknownError = 0,
     
     /**
      * The uploaded image was corrupt or unacceptable. Please see https://imgur.com/faq#types for the list of acceptable image types. If you have data of an unknown format, consider using ImageIO to determine the image type and/or convert to an acceptable image type.
@@ -88,4 +88,19 @@ typedef NS_ENUM(NSInteger, ImgurHTTPClientErrorCodes) {
      * You've hit the limits for the application or the source IP address.
      */
     ImgurHTTPClientRateLimitExceededError = 429,
+    
+    /**
+     * An unexplained error from the Imgur API.
+     */
+    ImgurHTTPClientAPIUnexplainedError = 500,
+    
+    /**
+     * The Imgur API response was unreadable.
+     */
+    ImgurHTTPClientUnreadableResponseError = -1,
 };
+
+/**
+ * The corresponding value is a string describing what went wrong in developer terms. It is not meant for presentation.
+ */
+extern NSString * const ImgurHTTPClientDeveloperDescriptionKey;
