@@ -53,6 +53,50 @@
                                     <action selector="openURLInSafari:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Pxr-j7-lae"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IUj-Rw-D7G" userLabel="Overlay">
+                                <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SOE-EI-uvG" userLabel="HUD">
+                                        <rect key="frame" x="304" y="435" width="160" height="154"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <subviews>
+                                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Uploading…" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Wl-fB-AhE">
+                                                <rect key="frame" x="20" y="42" width="120" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lfq-ZH-hV1">
+                                                <rect key="frame" x="56" y="104" width="48" height="30"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <state key="normal" title="Cancel">
+                                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="cancelUpload:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uB2-Pi-0sa"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <constraints>
+                                            <constraint firstItem="0Wl-fB-AhE" firstAttribute="top" secondItem="SOE-EI-uvG" secondAttribute="top" constant="42" id="7SA-Jf-4pw"/>
+                                            <constraint firstAttribute="width" constant="160" id="BIB-GR-etw"/>
+                                            <constraint firstAttribute="trailing" secondItem="0Wl-fB-AhE" secondAttribute="trailing" constant="20" id="UVX-tI-PpH"/>
+                                            <constraint firstAttribute="bottom" secondItem="lfq-ZH-hV1" secondAttribute="bottom" constant="20" id="XXi-gn-pdH"/>
+                                            <constraint firstAttribute="centerX" secondItem="lfq-ZH-hV1" secondAttribute="centerX" id="fXM-6l-L5v"/>
+                                            <constraint firstItem="0Wl-fB-AhE" firstAttribute="leading" secondItem="SOE-EI-uvG" secondAttribute="leading" constant="20" id="sQO-Mg-Ekm"/>
+                                            <constraint firstAttribute="height" constant="154" id="xdC-OJ-DUp"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.59999999999999998" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="centerX" secondItem="SOE-EI-uvG" secondAttribute="centerX" id="Pgj-PO-FKp"/>
+                                    <constraint firstAttribute="centerY" secondItem="SOE-EI-uvG" secondAttribute="centerY" id="hQr-XQ-0CU"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -64,11 +108,15 @@
                             <constraint firstAttribute="trailing" secondItem="ikI-r0-GWz" secondAttribute="trailing" id="LwN-ZK-hJj"/>
                             <constraint firstItem="ikI-r0-GWz" firstAttribute="top" secondItem="3ss-Hz-Ssb" secondAttribute="bottom" constant="8" symbolic="YES" id="ObP-sm-gYV"/>
                             <constraint firstItem="3ss-Hz-Ssb" firstAttribute="baseline" secondItem="PRp-9q-DMj" secondAttribute="baseline" id="TJF-No-svG"/>
+                            <constraint firstItem="IUj-Rw-D7G" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="VRl-KV-HBz"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="IUj-Rw-D7G" secondAttribute="bottom" id="ckb-1f-72n"/>
                             <constraint firstItem="PRp-9q-DMj" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="eCq-i6-Gz6"/>
                             <constraint firstItem="ikI-r0-GWz" firstAttribute="top" secondItem="PRp-9q-DMj" secondAttribute="bottom" constant="8" symbolic="YES" id="g0x-8B-cqQ"/>
                             <constraint firstItem="ikI-r0-GWz" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gCh-NN-cwM"/>
                             <constraint firstItem="3ss-Hz-Ssb" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="ht3-Wj-P22"/>
                             <constraint firstItem="Q00-wT-nJ4" firstAttribute="top" secondItem="ikI-r0-GWz" secondAttribute="bottom" constant="8" symbolic="YES" id="m0H-DO-wNC"/>
+                            <constraint firstAttribute="trailing" secondItem="IUj-Rw-D7G" secondAttribute="trailing" id="olF-yR-LJt"/>
+                            <constraint firstItem="IUj-Rw-D7G" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="pDB-zj-bj8"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Q00-wT-nJ4" secondAttribute="bottom" constant="20" id="vPN-fW-N4X"/>
                             <constraint firstItem="ikI-r0-GWz" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="wSq-zV-iIF"/>
                         </constraints>
@@ -78,6 +126,7 @@
                         <outlet property="chooseImageButton" destination="3ss-Hz-Ssb" id="9zs-Rm-iPV"/>
                         <outlet property="imageView" destination="ikI-r0-GWz" id="vto-ix-ySA"/>
                         <outlet property="uploadButton" destination="PRp-9q-DMj" id="YAe-gL-sXR"/>
+                        <outlet property="uploadingHUD" destination="IUj-Rw-D7G" id="gzS-BE-vGs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
