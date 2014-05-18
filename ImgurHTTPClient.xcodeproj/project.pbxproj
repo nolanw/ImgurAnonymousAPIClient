@@ -58,7 +58,7 @@
 			children = (
 				1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */,
 				1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */,
-				1CE9C49E1928D1F700994269 /* ImgurHTTPClient */,
+				1CE9C49E1928D1F700994269 /* Test App */,
 				1CE9C4971928D1F700994269 /* Frameworks */,
 				1CE9C4961928D1F700994269 /* Products */,
 			);
@@ -83,7 +83,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		1CE9C49E1928D1F700994269 /* ImgurHTTPClient */ = {
+		1CE9C49E1928D1F700994269 /* Test App */ = {
 			isa = PBXGroup;
 			children = (
 				1CE9C4A71928D1F700994269 /* AppDelegate.h */,
@@ -97,15 +97,15 @@
 				1CE9C4B01928D1F700994269 /* ViewController.h */,
 				1CE9C4B11928D1F700994269 /* ViewController.m */,
 			);
-			path = ImgurHTTPClient;
+			path = "Test App";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1CE9C4941928D1F700994269 /* ImgurHTTPClient */ = {
+		1CE9C4941928D1F700994269 /* Test App */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1CE9C4CA1928D1F800994269 /* Build configuration list for PBXNativeTarget "ImgurHTTPClient" */;
+			buildConfigurationList = 1CE9C4CA1928D1F800994269 /* Build configuration list for PBXNativeTarget "Test App" */;
 			buildPhases = (
 				1CE9C4911928D1F700994269 /* Sources */,
 				1CE9C4921928D1F700994269 /* Frameworks */,
@@ -115,7 +115,7 @@
 			);
 			dependencies = (
 			);
-			name = ImgurHTTPClient;
+			name = "Test App";
 			productName = ImgurHTTPClient;
 			productReference = 1CE9C4951928D1F700994269 /* ImgurHTTPClient.app */;
 			productType = "com.apple.product-type.application";
@@ -142,7 +142,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1CE9C4941928D1F700994269 /* ImgurHTTPClient */,
+				1CE9C4941928D1F700994269 /* Test App */,
 			);
 		};
 /* End PBXProject section */
@@ -286,9 +286,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = ImgurHTTPClient/Prefix.pch;
-				INFOPLIST_FILE = ImgurHTTPClient/Info.plist;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "Test App/Prefix.pch";
+				INFOPLIST_FILE = "Test App/Info.plist";
+				PRODUCT_NAME = ImgurHTTPClient;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -299,9 +299,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = ImgurHTTPClient/Prefix.pch;
-				INFOPLIST_FILE = ImgurHTTPClient/Info.plist;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "Test App/Prefix.pch";
+				INFOPLIST_FILE = "Test App/Info.plist";
+				PRODUCT_NAME = ImgurHTTPClient;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -318,7 +318,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1CE9C4CA1928D1F800994269 /* Build configuration list for PBXNativeTarget "ImgurHTTPClient" */ = {
+		1CE9C4CA1928D1F800994269 /* Build configuration list for PBXNativeTarget "Test App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1CE9C4CB1928D1F800994269 /* Debug */,
