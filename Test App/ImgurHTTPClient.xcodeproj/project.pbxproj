@@ -35,8 +35,8 @@
 		1CE9C4B11928D1F700994269 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1CE9C4B31928D1F700994269 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1CE9C4BA1928D1F800994269 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImgurHTTPClient.h; sourceTree = "<group>"; };
-		1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImgurHTTPClient.m; sourceTree = "<group>"; };
+		1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgurHTTPClient.h; path = ../ImgurHTTPClient.h; sourceTree = "<group>"; };
+		1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ImgurHTTPClient.m; path = ../ImgurHTTPClient.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +97,8 @@
 				1CE9C4B01928D1F700994269 /* ViewController.h */,
 				1CE9C4B11928D1F700994269 /* ViewController.m */,
 			);
-			path = "Test App";
+			name = "Test App";
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -286,8 +287,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Test App/Prefix.pch";
-				INFOPLIST_FILE = "Test App/Info.plist";
+				GCC_PREFIX_HEADER = Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = ImgurHTTPClient;
 				WRAPPER_EXTENSION = app;
 			};
@@ -299,8 +300,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Test App/Prefix.pch";
-				INFOPLIST_FILE = "Test App/Info.plist";
+				GCC_PREFIX_HEADER = Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = ImgurHTTPClient;
 				WRAPPER_EXTENSION = app;
 			};
