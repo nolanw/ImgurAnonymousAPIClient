@@ -24,7 +24,15 @@
 
 - (id)init
 {
-    return [self initWithClientID:nil];
+    // Check both the main bundle and this class's bundle for the client ID. This can help when running tests or doing other things when the app isn't the main bundle.
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *clientID = [mainBundle objectForInfoDictionaryKey:ImgurHTTPClientIDKey];
+    if (!clientID) {
+        NSBundle *thisBundle = [NSBundle bundleForClass:[ImgurHTTPClient class]];
+        clientID = [thisBundle objectForInfoDictionaryKey:ImgurHTTPClientIDKey];
+    }
+
+    return [self initWithClientID:clientID];
 }
 
 - (void)setClientID:(NSString *)clientID
@@ -44,16 +52,7 @@
     static ImgurHTTPClient *client;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
-        // Check both the main bundle and this class's bundle for the client ID. This can help when running tests or doing other things when the app isn't the main bundle.
-        NSBundle *mainBundle = [NSBundle mainBundle];
-        NSString *clientID = [mainBundle objectForInfoDictionaryKey:ImgurHTTPClientIDKey];
-        if (!clientID) {
-            NSBundle *thisBundle = [NSBundle bundleForClass:[ImgurHTTPClient class]];
-            clientID = [thisBundle objectForInfoDictionaryKey:ImgurHTTPClientIDKey];
-        }
-        
-        client = [[self alloc] initWithClientID:clientID];
+        client = [self new];
     });
     return client;
 }
