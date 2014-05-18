@@ -16,6 +16,7 @@
 		1CE9C4AF1928D1F700994269 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1CE9C4AD1928D1F700994269 /* Main_iPad.storyboard */; };
 		1CE9C4B21928D1F700994269 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4B11928D1F700994269 /* ViewController.m */; };
 		1CE9C4B41928D1F700994269 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CE9C4B31928D1F700994269 /* Images.xcassets */; };
+		1CE9C4D21928D34E00994269 /* ImgurHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,8 @@
 		1CE9C4B11928D1F700994269 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1CE9C4B31928D1F700994269 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1CE9C4BA1928D1F800994269 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImgurHTTPClient.h; sourceTree = "<group>"; };
+		1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImgurHTTPClient.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +56,8 @@
 		1CE9C48C1928D1F700994269 = {
 			isa = PBXGroup;
 			children = (
+				1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */,
+				1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */,
 				1CE9C49E1928D1F700994269 /* ImgurHTTPClient */,
 				1CE9C4971928D1F700994269 /* Frameworks */,
 				1CE9C4961928D1F700994269 /* Products */,
@@ -163,6 +168,7 @@
 				1CE9C4B21928D1F700994269 /* ViewController.m in Sources */,
 				1CE9C4A91928D1F700994269 /* AppDelegate.m in Sources */,
 				1CE9C4A51928D1F700994269 /* main.m in Sources */,
+				1CE9C4D21928D34E00994269 /* ImgurHTTPClient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
