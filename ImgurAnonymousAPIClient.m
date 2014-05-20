@@ -6,6 +6,7 @@
 #import <ImageIO/ImageIO.h>
 
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+    #import <AssetsLibrary/AssetsLibrary.h>
     #import <MobileCoreServices/MobileCoreServices.h>
 #else
     #import <CoreServices/CoreServices.h>
@@ -17,9 +18,32 @@
     #import "AFNetworking.h"
 #endif
 
-@interface ImgurAnonymousAPIClient () <NSURLSessionTaskDelegate>
+/**
+ * An ImgurAnonymousAPIResponseSerializer serializes an Imgur API response into an NSURL pointing to the uploaded image and returns an error in the ImgurAnonymousAPIClientErrorDomain.
+ */
+@interface ImgurAnonymousAPIResponseSerializer : AFJSONResponseSerializer
 
 @end
+
+/**
+ * An ImgurAssetInputStream streams a representation of an ALAsset.
+ */
+@interface ImgurAssetInputStream : NSInputStream
+
+/**
+ * Designated initializer.
+ *
+ * @param assetURL A URL representing an asset in the Assets Library.
+ * @param UTI      The UTI of the representation to stream, or nil to use the default representation.
+ */
+- (id)initWithAssetURL:(NSURL *)assetURL representationUTI:(NSString *)UTI;
+
+@property (readonly, strong, nonatomic) NSURL *assetURL;
+
+@property (readonly, copy, nonatomic) NSString *representationUTI;
+
+@end
+
 
 @implementation ImgurAnonymousAPIClient
 {
@@ -31,6 +55,7 @@
     if ((self = [super init])) {
         _clientID = clientID;
         _session = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+        _session.responseSerializer = [ImgurAnonymousAPIResponseSerializer serializer];
         [self updateDefaultHTTPHeaders];
     }
     return self;
@@ -70,141 +95,49 @@
                           title:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    NSMutableDictionary *parameters = [NSMutableDictionary new];
-    parameters[@"type"] = @"file";
-    if (title) parameters[@"title"] = title;
     NSString *MIMEType = MIMETypeForImageWithData(data);
     if (!filename) filename = DefaultFilenameForMIMEType(MIMEType);
-    NSURLRequest *request = [_session.requestSerializer multipartFormRequestWithMethod:@"POST"
-                                                                             URLString:@"https://api.imgur.com/3/image.json"
-                                                                            parameters:parameters
-                                                             constructingBodyWithBlock:^(id <AFMultipartFormData> formData)
-    {
+    NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
         [formData appendPartWithFileData:data name:@"image" fileName:filename mimeType:MIMEType];
-    } error:nil];
-    
-    NSProgress *progress;
-    NSURLSessionUploadTask *task = [_session uploadTaskWithStreamedRequest:request
-                                                                  progress:&progress
-                                                         completionHandler:^(NSURLResponse *response, id responseObject, NSError *error)
-    {
-        if (!completionHandler) return;
-        
-        if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
-            completionHandler(nil, error);
-            return;
-        }
-        
-        if (error) {
-            // Status codes are described at https://api.imgur.com/errorhandling
-            switch (((NSHTTPURLResponse *)response).statusCode) {
-                case 400:
-                    error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                code:ImgurAnonymousAPIInvalidImageError
-                                            userInfo:@{ NSLocalizedDescriptionKey: @"The image was rejected by Imgur",
-                                                        ImgurAnonymousAPIClientDeveloperDescriptionKey: @"see valid image types at https://imgur.com/faq#types" }];
-                    break;
-                    
-                case 403:
-                    error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                code:ImgurAnonymousAPIInvalidClientIDError
-                                            userInfo:@{ NSLocalizedDescriptionKey: @"This application is not yet configured to upload images to Imgur",
-                                                        ImgurAnonymousAPIClientDeveloperDescriptionKey: @"missing or invalid client ID" }];
-                    break;
-                    
-                case 429:
-                    error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                code:ImgurAnonymousAPIRateLimitExceededError
-                                            userInfo:@{ NSLocalizedDescriptionKey: @"Too many images were uploaded recently" }];
-                    break;
-                    
-                case 500:
-                    error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                code:ImgurAnonymousAPIUnexplainedError
-                                            userInfo:@{ NSLocalizedDescriptionKey: @"Imgur is having problems" }];
-                    break;
-                    
-                default:
-                    error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                code:ImgurAnonymousAPIClientUnknownError
-                                            userInfo:@{ NSLocalizedDescriptionKey: @"An unknown error occurred",
-                                                        NSUnderlyingErrorKey: error }];
-                    break;
-            }
-            completionHandler(nil, error);
-            return;
-        }
-        
-        if (![responseObject isKindOfClass:[NSDictionary class]]) {
-            NSError *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                 code:ImgurAnonymousAPIUnreadableResponseError
-                                             userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
-                                                         ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON was not a dictionary" }];
-            completionHandler(nil, error);
-            return;
-        }
-        
-        NSDictionary *data = responseObject[@"data"];
-        if (![data isKindOfClass:[NSDictionary class]]) {
-            NSError *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                 code:ImgurAnonymousAPIUnreadableResponseError
-                                             userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
-                                                         ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON for 'data' key was not a dictionary" }];
-            completionHandler(nil, error);
-            return;
-        }
-        
-        NSURL *URL;
-        NSString *link = data[@"link"];
-        if ([link isKindOfClass:[NSString class]]) {
-            URL = [NSURL URLWithString:link];
-        }
-        if (!URL) {
-            NSError *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
-                                                 code:ImgurAnonymousAPIUnreadableResponseError
-                                             userInfo:@{ NSLocalizedDescriptionKey: @"Unexpected response link",
-                                                         ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON for ['data']['link'] did not represent a URL" }];
-            completionHandler(nil, error);
-            return;
-        }
-        
-        completionHandler(URL, nil);
-    }];
-    [task resume];
-    return progress;
-}
-
-CF_RETURNS_RETAINED static NSString * MIMETypeForImageWithData(NSData *data)
-{
-    CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef)data, nil);
-    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(CGImageSourceGetType(imageSource), kUTTagClassMIMEType);
-    CFRelease(imageSource);
-    return (__bridge NSString *)MIMEType;
-}
-
-static NSString * DefaultFilenameForMIMEType(NSString *MIMEType)
-{
-    CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)MIMEType, nil);
-    CFStringRef extension = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassFilenameExtension);
-    CFRelease(UTI);
-    return [NSString stringWithFormat:@"image.%@", extension];
+    } completionHandler:completionHandler];
+    return [_session uploadProgressForTask:task];
 }
 
 - (NSProgress *)uploadImageFile:(NSURL *)fileURL
                       withTitle:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    // TODO write out the request body and do it
-    return nil;
+    // There does not seem to be a way to tell AFNetworking why the request failed to build (or even that it failed at all), so we save that error here and wrap the provided completion handler.
+    __block NSError *requestError;
+    __block NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
+        NSError *error;
+        BOOL ok = [formData appendPartWithFileURL:fileURL name:@"image" error:&error];
+        if (!ok) {
+            requestError = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                               code:ImgurAnonymousAPIClientMissingImageError
+                                           userInfo:@{ NSLocalizedDescriptionKey: @"The image file could not be read",
+                                                       NSUnderlyingErrorKey: error }];
+            [task cancel];
+        }
+    } completionHandler:^(NSURL *imgurURL, NSError *error) {
+        if (completionHandler) completionHandler(imgurURL, requestError ?: error);
+    }];
+    return [_session uploadProgressForTask:task];
 }
 
 - (NSProgress *)uploadStreamedImage:(NSInputStream *)stream
-                       withFilename:(NSString *)filename
+                             length:(int64_t)length
+                            withUTI:(NSString *)UTI
+                           filename:(NSString *)filename
                               title:(NSString *)title
                   completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    // TODO write out the request body and do it
-    return nil;
+    if (!filename) filename = DefaultFilenameForUTI(UTI);
+    NSString *MIMEType = MIMETypeForUTI(UTI);
+    NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
+        [formData appendPartWithInputStream:stream name:@"image" fileName:filename length:length mimeType:MIMEType];
+    } completionHandler:completionHandler];
+    return [_session uploadProgressForTask:task];
 }
 
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
@@ -223,11 +156,268 @@ static NSString * DefaultFilenameForMIMEType(NSString *MIMEType)
                              title:(NSString *)title
                  completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    // TODO if it's oriented up and less than 10MB, just upload it. Otherwise go through -uploadImage:withUTI:filename:title:completionHandler:.
-    return nil;
+    dispatch_semaphore_t flag = dispatch_semaphore_create(0);
+    ALAssetsLibrary *library = [ALAssetsLibrary new];
+    __block ALAssetRepresentation *representation;
+    __block NSError *underlyingError;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [library assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+            representation = asset.defaultRepresentation;
+            dispatch_semaphore_signal(flag);
+        } failureBlock:^(NSError *error) {
+            underlyingError = error;
+            dispatch_semaphore_signal(flag);
+        }];
+    });
+    dispatch_semaphore_wait(flag, DISPATCH_TIME_FOREVER);
+    
+    if (!representation || !UTTypeConformsTo((__bridge CFStringRef)representation.UTI, kUTTypeImage)) {
+        NSMutableDictionary *userInfo = [NSMutableDictionary new];
+        userInfo[NSLocalizedDescriptionKey] = @"The image could not be found";
+        if (underlyingError) userInfo[NSUnderlyingErrorKey] = underlyingError;
+        NSError *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain code:ImgurAnonymousAPIClientMissingImageError userInfo:userInfo];
+        if (completionHandler) completionHandler(nil, error);
+        return nil;
+    }
+    
+    if (representation.orientation != ALAssetOrientationUp || representation.size > 10485760) {
+        UIImageOrientation orientation = (UIImageOrientation)representation.orientation;
+        UIImage *image = [UIImage imageWithCGImage:representation.fullResolutionImage scale:representation.scale orientation:orientation];
+        return [self uploadImage:image withUTI:representation.UTI filename:representation.filename title:title completionHandler:completionHandler];
+    }
+    
+    NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
+        ImgurAssetInputStream *stream = [[ImgurAssetInputStream alloc] initWithAssetURL:assetURL representationUTI:representation.UTI];
+        NSString *MIMEType = MIMETypeForUTI(representation.UTI);
+        [formData appendPartWithInputStream:stream name:@"image" fileName:representation.filename length:representation.size mimeType:MIMEType];
+    } completionHandler:completionHandler];
+    return [_session uploadProgressForTask:task];
 }
 
 #endif
+
+static NSString * MIMETypeForImageWithData(NSData *data)
+{
+    CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef)data, nil);
+    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(CGImageSourceGetType(imageSource), kUTTagClassMIMEType);
+    CFRelease(imageSource);
+    return CFBridgingRelease(MIMEType);
+}
+
+static NSString * MIMETypeForUTI(NSString *UTI)
+{
+    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)UTI, kUTTagClassMIMEType);
+    return CFBridgingRelease(MIMEType);
+}
+
+static NSString * DefaultFilenameForUTI(NSString *UTI)
+{
+    NSString *extension = CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)UTI, kUTTagClassFilenameExtension));
+    return [NSString stringWithFormat:@"image.%@", extension];
+
+}
+
+static NSString * DefaultFilenameForMIMEType(NSString *MIMEType)
+{
+    NSString *UTI = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)MIMEType, nil));
+    return DefaultFilenameForUTI(UTI);
+}
+
+- (NSURLSessionUploadTask *)resumedUploadTaskWithTitle:(NSString *)title
+                                             bodyBlock:(void (^)(id <AFMultipartFormData>))bodyBlock
+                                     completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
+{
+    NSMutableDictionary *parameters = [NSMutableDictionary new];
+    parameters[@"type"] = @"file";
+    if (title) parameters[@"title"] = title;
+    NSURLRequest *request = [_session.requestSerializer multipartFormRequestWithMethod:@"POST"
+                                                                             URLString:@"https://api.imgur.com/3/image.json"
+                                                                            parameters:parameters
+                                                             constructingBodyWithBlock:bodyBlock
+                                                                                 error:nil];
+    NSURLSessionUploadTask *task = [_session uploadTaskWithStreamedRequest:request
+                                                                  progress:nil
+                                                         completionHandler:^(NSURLResponse *response, NSURL *imgurURL, NSError *error)
+    {
+        if (completionHandler) completionHandler(imgurURL, error);
+    }];
+    [task resume];
+    return task;
+}
+
+@end
+
+@implementation ImgurAnonymousAPIResponseSerializer
+
+- (BOOL)validateResponse:(NSHTTPURLResponse *)response data:(NSData *)data error:(NSError *__autoreleasing *)error
+{
+    NSError *superError;
+    if ([super validateResponse:response data:data error:&superError]) return YES;
+    if (!error) return NO;
+    
+    // Status codes are described at https://api.imgur.com/errorhandling
+    if ([superError.domain isEqualToString:ImgurAnonymousAPIClientErrorDomain]) {
+        *error = superError;
+    } else if (response.statusCode == 400) {
+        *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                     code:ImgurAnonymousAPIInvalidImageError
+                                 userInfo:@{ NSLocalizedDescriptionKey: @"The image was rejected by Imgur",
+                                             ImgurAnonymousAPIClientDeveloperDescriptionKey: @"see valid image types at https://imgur.com/faq#types" }];
+    } else if (response.statusCode == 403) {
+        *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                     code:ImgurAnonymousAPIInvalidClientIDError
+                                 userInfo:@{ NSLocalizedDescriptionKey: @"This application is not yet configured to upload images to Imgur",
+                                             ImgurAnonymousAPIClientDeveloperDescriptionKey: @"missing or invalid client ID" }];
+    } else if (response.statusCode == 429) {
+        *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                     code:ImgurAnonymousAPIRateLimitExceededError
+                                 userInfo:@{ NSLocalizedDescriptionKey: @"Too many images were uploaded recently" }];
+    } else if (response.statusCode == 500) {
+        *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                     code:ImgurAnonymousAPIUnexplainedError
+                                 userInfo:@{ NSLocalizedDescriptionKey: @"Imgur is having problems" }];
+    } else {
+        *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                     code:ImgurAnonymousAPIClientUnknownError
+                                 userInfo:@{ NSLocalizedDescriptionKey: @"An unknown error occurred",
+                                             NSUnderlyingErrorKey: superError }];
+    }
+    return NO;
+}
+
+- (id)responseObjectForResponse:(NSURLResponse *)response data:(NSData *)data error:(NSError *__autoreleasing *)error
+{
+    NSDictionary *responseObject = [super responseObjectForResponse:response data:data error:error];
+    if (!responseObject) return nil;
+    
+    if (![responseObject isKindOfClass:[NSDictionary class]]) {
+        if (error) {
+            *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                         code:ImgurAnonymousAPIUnreadableResponseError
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
+                                                 ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON was not a dictionary" }];
+        }
+        return nil;
+    }
+    
+    responseObject = responseObject[@"data"];
+    if (![responseObject isKindOfClass:[NSDictionary class]]) {
+        if (error) {
+            *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                         code:ImgurAnonymousAPIUnreadableResponseError
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"Imgur did not respond as expected",
+                                                 ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON for 'data' key was not a dictionary" }];
+        }
+        return nil;
+    }
+    
+    NSURL *URL;
+    NSString *link = responseObject[@"link"];
+    if ([link isKindOfClass:[NSString class]]) {
+        URL = [NSURL URLWithString:link];
+    }
+    if (!URL) {
+        NSString *imgurError = responseObject[@"error"];
+        if (![imgurError isKindOfClass:[NSString class]]) imgurError = nil;
+        if (error) {
+            *error = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
+                                         code:ImgurAnonymousAPIUnreadableResponseError
+                                     userInfo:@{ NSLocalizedDescriptionKey: imgurError ?: @"Unexpected response from Imgur",
+                                                 ImgurAnonymousAPIClientDeveloperDescriptionKey: @"response JSON for ['data']['link'] did not represent a URL" }];
+        }
+        return nil;
+    }
+    
+    return URL;
+}
+
+@end
+
+@interface ImgurAssetInputStream ()
+
+@property (assign, nonatomic) NSStreamStatus streamStatus;
+@property (strong, nonatomic) NSError *streamError;
+
+@end
+
+@implementation ImgurAssetInputStream
+{
+    ALAssetsLibrary *_library;
+    ALAssetRepresentation *_assetRepresentation;
+    NSUInteger _readIndex;
+}
+
+- (id)initWithAssetURL:(NSURL *)assetURL representationUTI:(NSString *)UTI
+{
+    if ((self = [super init])) {
+        _assetURL = assetURL;
+        _representationUTI = UTI;
+    }
+    return self;
+}
+
+- (void)open
+{
+    self.streamStatus = NSStreamStatusOpening;
+    dispatch_semaphore_t flag = dispatch_semaphore_create(0);
+    _library = [ALAssetsLibrary new];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [_library assetForURL:self.assetURL resultBlock:^(ALAsset *asset) {
+            _assetRepresentation = self.representationUTI ? [asset representationForUTI:self.representationUTI] : asset.defaultRepresentation;
+            self.streamStatus = NSStreamStatusOpen;
+            dispatch_semaphore_signal(flag);
+        } failureBlock:^(NSError *error) {
+            self.streamStatus = NSStreamStatusError;
+            self.streamError = error;
+            dispatch_semaphore_signal(flag);
+        }];
+    });
+    dispatch_semaphore_wait(flag, DISPATCH_TIME_FOREVER);
+}
+
+- (void)close
+{
+    _library = nil;
+    _assetRepresentation = nil;
+}
+
+- (NSInteger)read:(uint8_t *)buffer maxLength:(NSUInteger)length
+{
+    NSError *error;
+    NSUInteger read = [_assetRepresentation getBytes:buffer fromOffset:_readIndex length:length error:&error];
+    if (read == 0) {
+        self.streamError = error;
+        self.streamStatus = error ? NSStreamStatusError : NSStreamStatusAtEnd;
+    }
+    _readIndex += read;
+    return read;
+}
+
+- (BOOL)getBuffer:(uint8_t **)buffer length:(NSUInteger *)length
+{
+    return NO;
+}
+
+- (BOOL)hasBytesAvailable
+{
+    return _readIndex < (NSUInteger)_assetRepresentation.size;
+}
+
+- (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode
+{}
+
+- (void)removeFromRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode
+{}
+
+- (id)propertyForKey:(NSString *)key
+{
+    return nil;
+}
+
+- (BOOL)setProperty:(id)property forKey:(NSString *)key
+{
+    return NO;
+}
 
 @end
 

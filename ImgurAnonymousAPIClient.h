@@ -12,7 +12,7 @@
  *
  * Imgur describes at https://imgur.com/faq#types the types of images it will accept.
  *
- * Imgur describes at https://imgur.com/faq#size a maximum file size for uploads. Currently it's 10MB. However, uploaded images are resized to a maximum of 1MB (or 2MB for animated GIFs and APNGs), so aim for that size if you have the choice.
+ * Imgur describes at https://imgur.com/faq#size a maximum file size for uploads. Currently it's 10MB for static images and 2MB for animated images. However, images larger than 1MB are shrunk down to 1MB, so if you need a target to aim for, that's a good one.
  */
 @interface ImgurAnonymousAPIClient : NSObject
 
@@ -102,6 +102,8 @@
  * Anonymously uploads an image from a stream to Imgur.
  *
  * @param stream            A stream that provides the image data.
+ * @param length            The number of bytes in the stream.
+ * @param UTI               A Universal Type Indicator describing the data.
  * @param filename          An optional filename for the uploaded image. The filename is visible on the Imgur website but does not affect any part of the URL passed to the completionHandler. May be nil.
  * @param title             An optional title for the uploaded image. The title is visible on the Imgur website. May be nil.
  * @param completionHandler A block to call after uploading the image, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completion handler is always called on the main thread.
@@ -109,7 +111,9 @@
  * @return An NSProgress that can be used to cancel, suspend, or monitor the progress of the upload.
  */
 - (NSProgress *)uploadStreamedImage:(NSInputStream *)stream
-                       withFilename:(NSString *)filename
+                             length:(int64_t)length
+                            withUTI:(NSString *)UTI
+                           filename:(NSString *)filename
                               title:(NSString *)title
                   completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
@@ -132,6 +136,7 @@ enum {
      */
     ImgurAnonymousAPIClientUnknownError = 0,
     
+    
     // Errors during preprocessing.
     
     /**
@@ -139,10 +144,11 @@ enum {
      */
     ImgurAnonymousAPIClientMissingImageError = 1,
     
+    
     // Errors returned by the Imgur API.
     
     /**
-     * The uploaded image was corrupt or unacceptable. Please see https://imgur.com/faq#types for the list of acceptable image types. If you have data of an unknown format, consider using ImageIO to determine the image type and/or convert to an acceptable image type.
+     * The uploaded image was corrupt or unacceptable. Please see https://imgur.com/faq#types for the list of acceptable image types.
      */
     ImgurAnonymousAPIInvalidImageError = 400,
     
