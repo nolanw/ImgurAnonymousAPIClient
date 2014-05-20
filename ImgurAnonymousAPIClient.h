@@ -43,7 +43,6 @@
  *
  * @param image             The image to upload.
  * @param filename          The filename for the uploaded image. The pathExtension is read to determine the type of the uploaded image (e.g. JPEG or PNG). The filename does not affect the URL passed to the completionHandler. The filename may be visible on the Imgur website. If nil, the filename "image.png" is used.
- * @param title             An optional title for the uploaded image. The title may be visible on the Imgur website.
  * @param completionHandler A block to call after uploading the image, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completion handler is always called on the main thread.
  *
  * @return An NSProgress that can be used to cancel, suspend, or monitor the progress of the upload.
@@ -52,7 +51,6 @@
  */
 - (NSProgress *)uploadImage:(UIImage *)image
                withFilename:(NSString *)filename
-                      title:(NSString *)title
           completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 /**
@@ -60,14 +58,12 @@
  *
  * @param assetURL          A URL representing an asset in the Assets Library. The asset's representations are checked to determine the type of the uploaded image.
  * @param filename          An optional filename for the uploaded image. The filename may be visible on the Imgur website. If nil, the asset's filename is used.
- * @param title             An optional title for the uploaded image. The title may be visible on the Imgur website.
  * @param completionHandler A block to call after uploading the image, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completion handler is always called on the main thread.
  *
  * @return An NSProgress that can be used to cancel, suspend, or monitor the progress of the upload.
  */
 - (NSProgress *)uploadAssetWithURL:(NSURL *)assetURL
                           filename:(NSString *)filename
-                             title:(NSString *)title
                  completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 #endif
@@ -77,14 +73,12 @@
  *
  * @param data              The image data. The image data is read to determine the uploaded image type.
  * @param filename          The filename for the uploaded image. The filename may be visible on the Imgur website. If nil, the filename "image.png" is used.
- * @param title             An optional title for the uploaded image. The title may be visible on the Imgur website.
  * @param completionHandler A block to call after uploading the image data, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completionHandler is always called on the main thread.
  *
  * @return An NSProgress that can be used to cancel, suspend, or monitor the progress of the upload.
  */
 - (NSProgress *)uploadImageData:(NSData *)data
                    withFilename:(NSString *)filename
-                          title:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 /**
@@ -92,14 +86,12 @@
  *
  * @param fileURL           The URL of the image file to upload. The image file is read to determine the uploaded image type.
  * @param filename          An optional filename for the image file. The filename may be visible on the Imgur website. If nil, the fileURL provides the filename.
- * @param title             An optional title for the uploaded image. The title may be visible on the Imgur website.
  * @param completionHandler A block to call after uploading the image data, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completion handler is always called on the main thread.
  *
  * @return The resumed NSURLSessionDataTask which can be cancelled or suspended as needed.
  */
 - (NSProgress *)uploadImageFile:(NSURL *)fileURL
                    withFilename:(NSString *)filename
-                          title:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 /**
@@ -108,7 +100,6 @@
  * @param stream            A stream that provides the image data.
  * @param length            The number of bytes in the stream.
  * @param filename          The filename for the uploaded image. The pathExtension is read to determine the type of the image (e.g. JPEG or PNG). The filename does not affect the URL passed to the completionHandler. The filename may be visible on the Imgur website. If nil, the filename "image.png" is used.
- * @param title             An optional title for the uploaded image. The title may be visible on the Imgur website.
  * @param completionHandler A block to call after uploading the image, which returns nothing and takes two parameters: the Imgur URL if the upload succeeded; and an NSError object in the ImgurAnonymousAPIClientErrorDomain describing any failure. The completion handler is always called on the main thread.
  *
  * @return An NSProgress that can be used to cancel, suspend, or monitor the progress of the upload.
@@ -116,7 +107,6 @@
 - (NSProgress *)uploadStreamedImage:(NSInputStream *)stream
                              length:(int64_t)length
                        withFilename:(NSString *)filename
-                              title:(NSString *)title
                   completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler;
 
 @end
