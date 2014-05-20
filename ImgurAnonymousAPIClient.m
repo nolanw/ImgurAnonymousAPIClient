@@ -148,9 +148,54 @@
                       title:(NSString *)title
           completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    // TODO rotate the image if needed, resize it down to below 10MB if needed, then upload as usual.
-    return nil;
+    NSProgress *progress = [NSProgress progressWithTotalUnitCount:2];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        CGSize targetSize = image.size;
+        
+        // If we aim for too large an image right off the bat we'll just crash under memory pressure. I picked this size because it doesn't crash my 5th generation iPod touch.
+        const CGFloat ArbitraryMaximumPixelCount = ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrashing * ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrashing;
+        while (targetSize.width * image.scale * targetSize.height * image.scale > ArbitraryMaximumPixelCount) {
+            targetSize.width /= 2;
+            targetSize.height /= 2;
+        }
+        
+        NSData *data;
+        for (;;) @autoreleasepool {
+            if (progress.cancelled) break;
+            UIImage *serializableImage = image;
+            if (!(image.imageOrientation == UIImageOrientationUp && CGSizeEqualToSize(image.size, targetSize))) {
+                UIGraphicsBeginImageContextWithOptions(targetSize, NO, image.scale);
+                [image drawInRect:CGRectMake(0, 0, targetSize.width, targetSize.height)];
+                serializableImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+            }
+            data = [UTI isEqualToString:(id)kUTTypeJPEG] ? UIImageJPEGRepresentation(serializableImage, 0.9) : UIImagePNGRepresentation(serializableImage);
+            if (data.length <= TenMegabytes || progress.cancelled) break;
+            targetSize.width /= 2;
+            targetSize.height /= 2;
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (progress.cancelled) {
+                if (completionHandler) {
+                    NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler(nil, error);
+                    });
+                }
+                return;
+            }
+            progress.completedUnitCount++;
+            
+            [progress becomeCurrentWithPendingUnitCount:1];
+            [self uploadImageData:data withFilename:filename title:title completionHandler:completionHandler];
+            [progress resignCurrent];
+        });
+    });
+    return progress;
 }
+
+static const CGFloat ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrashing = 5000;
 
 - (NSProgress *)uploadAssetWithURL:(NSURL *)assetURL
                              title:(NSString *)title
@@ -180,19 +225,65 @@
         return nil;
     }
     
-    if (representation.orientation != ALAssetOrientationUp || representation.size > 10485760) {
-        UIImageOrientation orientation = (UIImageOrientation)representation.orientation;
-        UIImage *image = [UIImage imageWithCGImage:representation.fullResolutionImage scale:representation.scale orientation:orientation];
-        return [self uploadImage:image withUTI:representation.UTI filename:representation.filename title:title completionHandler:completionHandler];
+    // GIFs and sufficiently-small files that don't need rotation can be uploaded directly.
+    if ([representation.UTI isEqualToString:(id)kUTTypeGIF] || (representation.orientation == ALAssetOrientationUp && representation.size <= TenMegabytes)) {
+        NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
+            ImgurAssetInputStream *stream = [[ImgurAssetInputStream alloc] initWithAssetURL:assetURL representationUTI:representation.UTI];
+            NSString *MIMEType = MIMETypeForUTI(representation.UTI);
+            [formData appendPartWithInputStream:stream name:@"image" fileName:representation.filename length:representation.size mimeType:MIMEType];
+        } completionHandler:completionHandler];
+        return [_session uploadProgressForTask:task];
     }
     
-    NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
-        ImgurAssetInputStream *stream = [[ImgurAssetInputStream alloc] initWithAssetURL:assetURL representationUTI:representation.UTI];
-        NSString *MIMEType = MIMETypeForUTI(representation.UTI);
-        [formData appendPartWithInputStream:stream name:@"image" fileName:representation.filename length:representation.size mimeType:MIMEType];
-    } completionHandler:completionHandler];
-    return [_session uploadProgressForTask:task];
+    NSProgress *progress = [NSProgress progressWithTotalUnitCount:2];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        // Start with a smaller image directly from the asset. Does not require loading the whole image into memory.
+        // http://mindsea.com/2012/12/18/downscaling-huge-alassets-without-fear-of-sigkill
+        CGDataProviderDirectCallbacks callbacks = {
+            .getBytesAtPosition = getAssetBytesCallback,
+            .releaseInfo = releaseAssetCallback,
+        };
+        CGDataProviderRef provider = CGDataProviderCreateDirect((void *)CFBridgingRetain(representation), representation.size, &callbacks);
+        CGImageSourceRef imageSource = CGImageSourceCreateWithDataProvider(provider, nil);
+        NSDictionary *options = @{ (id)kCGImageSourceCreateThumbnailWithTransform: @YES,
+                                   (id)kCGImageSourceThumbnailMaxPixelSize: @(ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrashing),
+                                   (id)kCGImageSourceCreateThumbnailFromImageAlways: @YES };
+        CGImageRef thumbnailImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, (__bridge CFDictionaryRef)options);
+        CFRelease(imageSource);
+        CFRelease(provider);
+        
+        UIImage *image;
+        if (thumbnailImage) {
+            image = [UIImage imageWithCGImage:thumbnailImage];
+            CFRelease(thumbnailImage);
+        } else {
+            image = [UIImage imageWithCGImage:representation.fullResolutionImage scale:representation.scale orientation:(UIImageOrientation)representation.orientation];
+        }
+        
+        progress.completedUnitCount++;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [progress becomeCurrentWithPendingUnitCount:1];
+            [self uploadImage:image withUTI:representation.UTI filename:representation.filename title:title completionHandler:completionHandler];
+            [progress resignCurrent];
+        });
+    });
+    return progress;
 }
+
+static size_t getAssetBytesCallback(void *info, void *buffer, off_t position, size_t count)
+{
+    ALAssetRepresentation *representation = (__bridge ALAssetRepresentation *)info;
+    return [representation getBytes:buffer fromOffset:position length:count error:nil];
+}
+
+static void releaseAssetCallback(void *info)
+{
+    CFRelease(info);
+}
+
+static const long long TenMegabytes = 10485760;
 
 #endif
 
