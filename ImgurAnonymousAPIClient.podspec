@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.summary = "An anonymous Imgur image uploader"
   s.homepage = "https://github.com/nolanw/ImgurAnonymousAPIClient"
   s.author = "Nolan Waite"
-  s.source = {:git => "git://github.com/nolanw/ImgurAnonymousAPIClient.git", :tag => "v0.1"}
+  s.source = {:git => "https://github.com/nolanw/ImgurAnonymousAPIClient.git", :tag => "v0.1"}
   s.source_files = "ImgurAnonymousAPIClient.[hm]"
   s.requires_arc = true
   
@@ -15,6 +15,6 @@ Pod::Spec.new do |s|
   s.dependency 'AFNetworking', '~> 2.0'
 
   s.frameworks = 'ImageIO'
-  s.ios.frameworks = 'AssetLibrary', 'MobileCoreServices'
+  s.ios.frameworks = 'AssetsLibrary', 'MobileCoreServices'
   s.osx.frameworks = 'CoreServices'
 end
