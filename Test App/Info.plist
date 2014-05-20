@@ -45,7 +45,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>ImgurHTTPClientID</key>
+	<key>ImgurAnonymousAPIClientID</key>
 	<string>5229447b77a3e89</string>
 </dict>
 </plist>

@@ -7,24 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1CE9C4991928D1F700994269 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CE9C4981928D1F700994269 /* Foundation.framework */; };
-		1CE9C49B1928D1F700994269 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CE9C49A1928D1F700994269 /* CoreGraphics.framework */; };
-		1CE9C49D1928D1F700994269 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CE9C49C1928D1F700994269 /* UIKit.framework */; };
 		1CE9C4A51928D1F700994269 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4A41928D1F700994269 /* main.m */; };
 		1CE9C4A91928D1F700994269 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4A81928D1F700994269 /* AppDelegate.m */; };
 		1CE9C4AC1928D1F700994269 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1CE9C4AA1928D1F700994269 /* Main_iPhone.storyboard */; };
 		1CE9C4AF1928D1F700994269 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1CE9C4AD1928D1F700994269 /* Main_iPad.storyboard */; };
 		1CE9C4B21928D1F700994269 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4B11928D1F700994269 /* ViewController.m */; };
 		1CE9C4B41928D1F700994269 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CE9C4B31928D1F700994269 /* Images.xcassets */; };
-		1CE9C4D21928D34E00994269 /* ImgurHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */; };
-		55C4E8AEC2514A2786D00F5C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 281195CEF2B84AEDB9F816F2 /* libPods.a */; };
+		1CE9C4D21928D34E00994269 /* ImgurAnonymousAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CE9C4D11928D34E00994269 /* ImgurAnonymousAPIClient.m */; };
+		EF0879EFEC4447A39DA08A1E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 54672995BE26445ABCBBB35F /* libPods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1CE9C4951928D1F700994269 /* ImgurHTTPClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgurHTTPClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		1CE9C4981928D1F700994269 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		1CE9C49A1928D1F700994269 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		1CE9C49C1928D1F700994269 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		1C7D8955192B7F4A00003576 /* ImgurAnonymousAPIClient.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; name = ImgurAnonymousAPIClient.podspec; path = ../ImgurAnonymousAPIClient.podspec; sourceTree = "<group>"; };
+		1CE9C4951928D1F700994269 /* ImgurClientTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgurClientTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CE9C4A01928D1F700994269 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CE9C4A41928D1F700994269 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1CE9C4A61928D1F700994269 /* Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
@@ -35,11 +30,10 @@
 		1CE9C4B01928D1F700994269 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		1CE9C4B11928D1F700994269 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1CE9C4B31928D1F700994269 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		1CE9C4BA1928D1F800994269 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgurHTTPClient.h; path = ../ImgurHTTPClient.h; sourceTree = "<group>"; };
-		1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ImgurHTTPClient.m; path = ../ImgurHTTPClient.m; sourceTree = "<group>"; };
-		281195CEF2B84AEDB9F816F2 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9FCC5E1A41045B5ABABD6FC /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		1CE9C4D01928D34E00994269 /* ImgurAnonymousAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgurAnonymousAPIClient.h; path = ../ImgurAnonymousAPIClient.h; sourceTree = "<group>"; };
+		1CE9C4D11928D34E00994269 /* ImgurAnonymousAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ImgurAnonymousAPIClient.m; path = ../ImgurAnonymousAPIClient.m; sourceTree = "<group>"; };
+		31282C3013FF4AB5A05795CB /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		54672995BE26445ABCBBB35F /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,10 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1CE9C49B1928D1F700994269 /* CoreGraphics.framework in Frameworks */,
-				1CE9C49D1928D1F700994269 /* UIKit.framework in Frameworks */,
-				1CE9C4991928D1F700994269 /* Foundation.framework in Frameworks */,
-				55C4E8AEC2514A2786D00F5C /* libPods.a in Frameworks */,
+				EF0879EFEC4447A39DA08A1E /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,33 +51,22 @@
 		1CE9C48C1928D1F700994269 = {
 			isa = PBXGroup;
 			children = (
-				1CE9C4D01928D34E00994269 /* ImgurHTTPClient.h */,
-				1CE9C4D11928D34E00994269 /* ImgurHTTPClient.m */,
+				1CE9C4D01928D34E00994269 /* ImgurAnonymousAPIClient.h */,
+				1CE9C4D11928D34E00994269 /* ImgurAnonymousAPIClient.m */,
+				1C7D8955192B7F4A00003576 /* ImgurAnonymousAPIClient.podspec */,
 				1CE9C49E1928D1F700994269 /* Test App */,
-				1CE9C4971928D1F700994269 /* Frameworks */,
 				1CE9C4961928D1F700994269 /* Products */,
-				A9FCC5E1A41045B5ABABD6FC /* Pods.xcconfig */,
+				31282C3013FF4AB5A05795CB /* Pods.xcconfig */,
+				EEA7667EAAB0437CA3732864 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		1CE9C4961928D1F700994269 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1CE9C4951928D1F700994269 /* ImgurHTTPClient.app */,
+				1CE9C4951928D1F700994269 /* ImgurClientTest.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		1CE9C4971928D1F700994269 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				1CE9C4981928D1F700994269 /* Foundation.framework */,
-				1CE9C49A1928D1F700994269 /* CoreGraphics.framework */,
-				1CE9C49C1928D1F700994269 /* UIKit.framework */,
-				1CE9C4BA1928D1F800994269 /* XCTest.framework */,
-				281195CEF2B84AEDB9F816F2 /* libPods.a */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		1CE9C49E1928D1F700994269 /* Test App */ = {
@@ -106,6 +86,14 @@
 			name = "Test App";
 			sourceTree = "<group>";
 		};
+		EEA7667EAAB0437CA3732864 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				54672995BE26445ABCBBB35F /* libPods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -113,11 +101,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1CE9C4CA1928D1F800994269 /* Build configuration list for PBXNativeTarget "Test App" */;
 			buildPhases = (
-				31E64CF4362C4A2093621486 /* Check Pods Manifest.lock */,
+				7486012378004975A8F42590 /* Check Pods Manifest.lock */,
 				1CE9C4911928D1F700994269 /* Sources */,
 				1CE9C4921928D1F700994269 /* Frameworks */,
 				1CE9C4931928D1F700994269 /* Resources */,
-				E8EAE1CF1AFD481C99FB06A4 /* Copy Pods Resources */,
+				C642576893654132A4613F3F /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -125,7 +113,7 @@
 			);
 			name = "Test App";
 			productName = ImgurHTTPClient;
-			productReference = 1CE9C4951928D1F700994269 /* ImgurHTTPClient.app */;
+			productReference = 1CE9C4951928D1F700994269 /* ImgurClientTest.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -137,7 +125,7 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Nolan Waite";
 			};
-			buildConfigurationList = 1CE9C4901928D1F700994269 /* Build configuration list for PBXProject "ImgurHTTPClient" */;
+			buildConfigurationList = 1CE9C4901928D1F700994269 /* Build configuration list for PBXProject "ImgurAnonymousAPIClient" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -169,7 +157,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		31E64CF4362C4A2093621486 /* Check Pods Manifest.lock */ = {
+		7486012378004975A8F42590 /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -184,7 +172,7 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		E8EAE1CF1AFD481C99FB06A4 /* Copy Pods Resources */ = {
+		C642576893654132A4613F3F /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -209,7 +197,7 @@
 				1CE9C4B21928D1F700994269 /* ViewController.m in Sources */,
 				1CE9C4A91928D1F700994269 /* AppDelegate.m in Sources */,
 				1CE9C4A51928D1F700994269 /* main.m in Sources */,
-				1CE9C4D21928D34E00994269 /* ImgurHTTPClient.m in Sources */,
+				1CE9C4D21928D34E00994269 /* ImgurAnonymousAPIClient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,28 +311,28 @@
 		};
 		1CE9C4CB1928D1F800994269 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9FCC5E1A41045B5ABABD6FC /* Pods.xcconfig */;
+			baseConfigurationReference = 31282C3013FF4AB5A05795CB /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
-				PRODUCT_NAME = ImgurHTTPClient;
+				PRODUCT_NAME = ImgurClientTest;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
 		};
 		1CE9C4CC1928D1F800994269 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9FCC5E1A41045B5ABABD6FC /* Pods.xcconfig */;
+			baseConfigurationReference = 31282C3013FF4AB5A05795CB /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
-				PRODUCT_NAME = ImgurHTTPClient;
+				PRODUCT_NAME = ImgurClientTest;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -352,7 +340,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1CE9C4901928D1F700994269 /* Build configuration list for PBXProject "ImgurHTTPClient" */ = {
+		1CE9C4901928D1F700994269 /* Build configuration list for PBXProject "ImgurAnonymousAPIClient" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1CE9C4C81928D1F800994269 /* Debug */,

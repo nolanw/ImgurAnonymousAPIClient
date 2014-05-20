@@ -5,14 +5,14 @@
 
 #import "ViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
-#import "ImgurHTTPClient.h"
+#import "ImgurAnonymousAPIClient.h"
 
 @interface ViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPopoverControllerDelegate>
 
 @property (strong, nonatomic) UIImage *image;
 @property (strong, nonatomic) NSURL *URL;
 
-@property (strong, nonatomic) NSURLSessionDataTask *uploadTask;
+@property (strong, nonatomic) NSProgress *uploadProgress;
 
 @property (weak, nonatomic) IBOutlet UIButton *chooseImageButton;
 @property (weak, nonatomic) IBOutlet UIButton *uploadButton;
@@ -33,7 +33,7 @@
     
     self.uploadButton.enabled = !!self.image;
     
-    self.uploadingHUD.hidden = !self.uploadTask;
+    self.uploadingHUD.hidden = !self.uploadProgress;
     
     [self.URLButton setTitle:self.URL.absoluteString forState:UIControlStateNormal];
     self.URLButton.enabled = !!self.URL;
@@ -73,9 +73,9 @@
     self.URL = nil;
     NSData *data = UIImagePNGRepresentation(self.image);
     __weak __typeof__(self) weakSelf = self;
-    self.uploadTask = [[ImgurHTTPClient client] uploadImageData:data withFilename:nil title:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
+    self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImageData:data withFilename:nil title:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
         __typeof__(self) self = weakSelf;
-        self.uploadTask = nil;
+        self.uploadProgress = nil;
         if (error) {
             UIAlertView *alert = [UIAlertView new];
             alert.title = @"Error Uploading Image";
@@ -92,7 +92,7 @@
 
 - (IBAction)cancelUpload:(id)sender
 {
-    [self.uploadTask cancel];
+    [self.uploadProgress cancel];
 }
 
 - (IBAction)openURLInSafari:(id)sender
@@ -120,7 +120,7 @@
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
-    if (viewController == navigationController.viewControllers[0]) {
+    if (viewController == navigationController.viewControllers.firstObject) {
         viewController.title = @"Choose Image";
     }
 }

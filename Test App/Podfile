@@ -1,1 +1,1 @@
-podspec :path => "../ImgurHTTPClient.podspec"
+podspec :path => "../ImgurAnonymousAPIClient.podspec"
