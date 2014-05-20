@@ -158,20 +158,21 @@
     // file
     // stream
     if (buttonIndex == 0) {
-        self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImage:self.image withUTI:(id)kUTTypePNG filename:nil title:nil completionHandler:completionHandler];
+        self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImage:self.image withFilename:@"image.png" title:nil completionHandler:completionHandler];
     } else if (buttonIndex == 1) {
-        self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadAssetWithURL:self.assetURL title:nil completionHandler:completionHandler];
+        self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadAssetWithURL:self.assetURL filename:nil title:nil completionHandler:completionHandler];
     } else {
         NSData *data = UIImagePNGRepresentation(self.image);
         if (buttonIndex == 2) {
-            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImageData:data withFilename:nil title:nil completionHandler:completionHandler];
+            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImageData:data withFilename:@"image.png" title:nil completionHandler:completionHandler];
         } else if (buttonIndex == 3) {
             NSURL *cachesFolder = [[NSFileManager defaultManager] URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask].firstObject;
             NSURL *fileURL = [cachesFolder URLByAppendingPathComponent:@"image.png"];
-            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImageFile:fileURL withTitle:nil completionHandler:completionHandler];
+            [data writeToURL:fileURL atomically:NO];
+            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadImageFile:fileURL withFilename:nil title:nil completionHandler:completionHandler];
         } else if (buttonIndex == 4) {
             NSInputStream *stream = [NSInputStream inputStreamWithData:data];
-            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadStreamedImage:stream length:data.length withUTI:(id)kUTTypePNG filename:nil title:nil completionHandler:completionHandler];
+            self.uploadProgress = [[ImgurAnonymousAPIClient client] uploadStreamedImage:stream length:data.length withFilename:@"image.png" title:nil completionHandler:completionHandler];
         } else {
             @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Too many buttons" userInfo:nil];
         }

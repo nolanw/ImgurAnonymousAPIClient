@@ -95,8 +95,8 @@
                           title:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    NSString *MIMEType = MIMETypeForImageWithData(data);
-    if (!filename) filename = DefaultFilenameForMIMEType(MIMEType);
+    if (!filename) filename = @"image.png";
+    NSString *MIMEType = MIMETypeForImageWithData(data) ?: MIMETypeForUTI((id)kUTTypePNG);
     NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
         [formData appendPartWithFileData:data name:@"image" fileName:filename mimeType:MIMEType];
     } completionHandler:completionHandler];
@@ -104,14 +104,18 @@
 }
 
 - (NSProgress *)uploadImageFile:(NSURL *)fileURL
-                      withTitle:(NSString *)title
+                   withFilename:(NSString *)filename
+                          title:(NSString *)title
               completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
+    NSString *MIMEType = MIMETypeForImageAtURL(fileURL) ?: MIMETypeForUTI((id)kUTTypePNG);
+    if (!filename) filename = fileURL.lastPathComponent;
+    
     // There does not seem to be a way to tell AFNetworking why the request failed to build (or even that it failed at all), so we save that error here and wrap the provided completion handler.
     __block NSError *requestError;
     __block NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
         NSError *error;
-        BOOL ok = [formData appendPartWithFileURL:fileURL name:@"image" error:&error];
+        BOOL ok = [formData appendPartWithFileURL:fileURL name:@"image" fileName:filename mimeType:MIMEType error:&error];
         if (!ok) {
             requestError = [NSError errorWithDomain:ImgurAnonymousAPIClientErrorDomain
                                                code:ImgurAnonymousAPIClientMissingImageError
@@ -127,13 +131,12 @@
 
 - (NSProgress *)uploadStreamedImage:(NSInputStream *)stream
                              length:(int64_t)length
-                            withUTI:(NSString *)UTI
-                           filename:(NSString *)filename
+                       withFilename:(NSString *)filename
                               title:(NSString *)title
                   completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
-    if (!filename) filename = DefaultFilenameForUTI(UTI);
-    NSString *MIMEType = MIMETypeForUTI(UTI);
+    NSString *MIMEType = MIMETypeForFilename(filename) ?: MIMETypeForUTI((id)kUTTypePNG);
+    if (!filename) filename = @"image.png";
     NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
         [formData appendPartWithInputStream:stream name:@"image" fileName:filename length:length mimeType:MIMEType];
     } completionHandler:completionHandler];
@@ -143,11 +146,12 @@
 #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
 
 - (NSProgress *)uploadImage:(UIImage *)image
-                    withUTI:(NSString *)UTI
-                   filename:(NSString *)filename
+               withFilename:(NSString *)filename
                       title:(NSString *)title
           completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
+    if (!filename) filename = @"image.png";
+    BOOL isJPEG = FilenameSuggestsJPEG(filename);
     NSProgress *progress = [NSProgress progressWithTotalUnitCount:2];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         CGSize targetSize = image.size;
@@ -169,7 +173,7 @@
                 serializableImage = UIGraphicsGetImageFromCurrentImageContext();
                 UIGraphicsEndImageContext();
             }
-            data = [UTI isEqualToString:(id)kUTTypeJPEG] ? UIImageJPEGRepresentation(serializableImage, 0.9) : UIImagePNGRepresentation(serializableImage);
+            data = isJPEG ? UIImageJPEGRepresentation(serializableImage, 0.9) : UIImagePNGRepresentation(serializableImage);
             if (data.length <= TenMegabytes || progress.cancelled) break;
             targetSize.width /= 2;
             targetSize.height /= 2;
@@ -198,6 +202,7 @@
 static const CGFloat ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrashing = 5000;
 
 - (NSProgress *)uploadAssetWithURL:(NSURL *)assetURL
+                          filename:(NSString *)filename
                              title:(NSString *)title
                  completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
 {
@@ -225,12 +230,14 @@ static const CGFloat ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrash
         return nil;
     }
     
+    if (!filename) filename = representation.filename;
+    
     // GIFs and sufficiently-small files that don't need rotation can be uploaded directly.
     if ([representation.UTI isEqualToString:(id)kUTTypeGIF] || (representation.orientation == ALAssetOrientationUp && representation.size <= TenMegabytes)) {
         NSURLSessionUploadTask *task = [self resumedUploadTaskWithTitle:title bodyBlock:^(id <AFMultipartFormData> formData) {
             ImgurAssetInputStream *stream = [[ImgurAssetInputStream alloc] initWithAssetURL:assetURL representationUTI:representation.UTI];
             NSString *MIMEType = MIMETypeForUTI(representation.UTI);
-            [formData appendPartWithInputStream:stream name:@"image" fileName:representation.filename length:representation.size mimeType:MIMEType];
+            [formData appendPartWithInputStream:stream name:@"image" fileName:filename length:representation.size mimeType:MIMEType];
         } completionHandler:completionHandler];
         return [_session uploadProgressForTask:task];
     }
@@ -265,7 +272,7 @@ static const CGFloat ArbitraryMaximumPixelWidthToAvoidRunningOutOfMemoryAndCrash
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [progress becomeCurrentWithPendingUnitCount:1];
-            [self uploadImage:image withUTI:representation.UTI filename:representation.filename title:title completionHandler:completionHandler];
+            [self uploadImage:image withFilename:filename title:title completionHandler:completionHandler];
             [progress resignCurrent];
         });
     });
@@ -287,31 +294,41 @@ static const long long TenMegabytes = 10485760;
 
 #endif
 
+static NSString * MIMETypeForUTI(NSString *UTI)
+{
+    return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)UTI, kUTTagClassMIMEType));
+}
+
 static NSString * MIMETypeForImageWithData(NSData *data)
 {
     CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef)data, nil);
+    if (!imageSource) return nil;
     CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(CGImageSourceGetType(imageSource), kUTTagClassMIMEType);
     CFRelease(imageSource);
     return CFBridgingRelease(MIMEType);
 }
 
-static NSString * MIMETypeForUTI(NSString *UTI)
+static NSString * MIMETypeForImageAtURL(NSURL *URL)
 {
-    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)UTI, kUTTagClassMIMEType);
+    CGImageSourceRef imageSource = CGImageSourceCreateWithURL((__bridge  CFURLRef)URL, nil);
+    if (!imageSource) return nil;
+    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(CGImageSourceGetType(imageSource), kUTTagClassMIMEType);
+    CFRelease(imageSource);
     return CFBridgingRelease(MIMEType);
 }
 
-static NSString * DefaultFilenameForUTI(NSString *UTI)
+static NSString * MIMETypeForFilename(NSString *filename)
 {
-    NSString *extension = CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)UTI, kUTTagClassFilenameExtension));
-    return [NSString stringWithFormat:@"image.%@", extension];
-
+    CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)filename.pathExtension, nil);
+    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass(UTI, kUTTagClassMIMEType);
+    CFRelease(UTI);
+    return CFBridgingRelease(MIMEType);
 }
 
-static NSString * DefaultFilenameForMIMEType(NSString *MIMEType)
+static BOOL FilenameSuggestsJPEG(NSString *filename)
 {
-    NSString *UTI = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)MIMEType, nil));
-    return DefaultFilenameForUTI(UTI);
+    NSString *UTI = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)filename.pathExtension, nil));
+    return UTTypeConformsTo((__bridge  CFStringRef)UTI, kUTTypeJPEG);
 }
 
 - (NSURLSessionUploadTask *)resumedUploadTaskWithTitle:(NSString *)title
