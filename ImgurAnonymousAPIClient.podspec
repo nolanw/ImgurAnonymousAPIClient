@@ -7,12 +7,14 @@ Pod::Spec.new do |s|
   s.author = "Nolan Waite"
   s.source = {:git => "git://github.com/nolanw/ImgurAnonymousAPIClient.git", :tag => "v0.1"}
   s.source_files = "ImgurAnonymousAPIClient.[hm]"
-  s.frameworks = 'ImageIO'
   s.requires_arc = true
-  s.dependency 'AFNetworking', '~> 2.0'
   
   s.ios.deployment_target = '7.0'
-  s.ios.frameworks = 'AssetLibrary', 'MobileCoreServices'
-  
   s.osx.deployment_target = '10.9'
+
+  s.dependency 'AFNetworking', '~> 2.0'
+
+  s.frameworks = 'ImageIO'
+  s.ios.frameworks = 'AssetLibrary', 'MobileCoreServices'
+  s.osx.frameworks = 'CoreServices'
 end
