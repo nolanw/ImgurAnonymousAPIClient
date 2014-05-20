@@ -1,7 +1,6 @@
 //  ViewController.m
-//  ImgurHTTPClient
 //
-//  Public domain. https://github.com/nolanw/ImgurHTTPClient
+//  Public domain. https://github.com/nolanw/ImgurAnonymousAPIClient
 
 #import "ViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>

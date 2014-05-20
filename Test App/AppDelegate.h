@@ -1,7 +1,6 @@
 //  AppDelegate.h
-//  ImgurHTTPClient
 //
-//  Public domain. https://github.com/nolanw/ImgurHTTPClient
+//  Public domain. https://github.com/nolanw/ImgurAnonymousAPIClient
 
 #import <UIKit/UIKit.h>
 
