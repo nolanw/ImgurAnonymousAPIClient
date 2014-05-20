@@ -1,53 +1,89 @@
-# ImgurHTTPClient
+# ImgurAnonymousAPIClient
 
 An anonymous Imgur image uploader.
 
-ImgurHTTPClient requires AFNetworking 2.0 or higher and requires iOS 7.0 or OS X 10.9.
+ImgurAnonymousAPIClient requires [AFNetworking 2.0 or higher][AFNetworking] and requires iOS 7.0 or OS X 10.9.
 
 ## Usage
 
+ImgurAnonymousAPIClient is flexible:
+
 ```objc
 // Put your client ID in Info.plist first! Then…
-NSData *imageData = UIImagePNGRepresentation(someImage);
-[[ImgurHTTPClient client] uploadImageData:imageData withFilename:nil title:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
+
+NSURL *assetURL = info[UIImagePickerControllerReferenceURL];
+[[ImgurAnonymousAPIClient client] uploadAssetWithURL:assetURL filename:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
+    // imgurURL is ready for you!
+    // And the image was resized too, if needed.
+    // Even the largest images work fine!
+}];
+
+// Or…
+
+UIImage *image = info[UIImagePickerControllerEditedImage];
+[[ImgurAnonymousAPIClient client] uploadImage:image withFilename:@"image.jpg" completionHandler:^(NSURL *imgurURL, NSError *error) {
+    // imgurURL is ready for you!
+    // And the image was resized too, if needed.
+}];
+
+// Or…
+
+NSURL *fileURLForSomeImage = ...;
+[[ImgurAnonymousAPIClient client] uploadImageFile:fileURLForSomeImage withFilename:nil completionHandler:^(NSURL *imgurURL, NSError *error) {
+    // imgurURL is ready for you!
+}];
+
+// Or…
+
+NSData *data = UIImageJPEGRepresentation(myImage, 0.9);
+[[ImgurAnonymousAPIClient client] uploadImageData:data withFilename:@"image.jpg" completionHandler:^(NSURL *imgurURL, NSError *error) {
     // imgurURL is ready for you!
 }];
 ```
 
-The client is contained within the `ImgurHTTPClient.h` and `ImgurHTTPClient.m` files. Simply copy those two files into your project.
+## Installation
 
-If you use CocoaPods, you can instead add `pod 'ImgurHTTPClient'` to your `Podfile`.
+If you use CocoaPods, you can instead simply add `pod 'ImgurAnonymousAPIClient'` to your `Podfile`.
 
-Once you're all set, you need an Imgur API client ID. This is a requirement for using the Imgur API, which is what ImgurHTTPClient uses. Be sure to [register your application][register] and get the client ID.
+Otherwise, the client is contained within the `ImgurAnonymousAPIClient.h` and `ImgurAnonymousAPIClient.m` files. Simply copy those two files into your project. You'll need to [install AFNetworking][AFNetworking] as well, if you aren't using it already.
 
-You have two options for specifying your client ID. Either create a client and give it the client ID:
+Once you're all set, you need an Imgur API client ID. This is a requirement for using the Imgur API, which is what ImgurAnonymousAPIClient uses. Be sure to [register your application][register] and get the client ID.
+
+You have three options for specifying your client ID. The most convenient is to put it in your `Info.plist` for the key `ImgurAnonymousAPIClientID`:
 
 ```objc
-ImgurHTTPClient *client = [[ImgurHTTPClient alloc] initWithClientID:@"YOURIDHERE"];
+ImgurAnonymousAPIClient *client = [ImgurAnonymousAPIClient new]; // Uses client ID from Info.plist.
+[ImgurAnonymousAPIClient client];                                // So does the convenient singleton.
 ```
 
-Or put it in your `Info.plist` for the key `ImgurHTTPClientID` then leave it out when creating a client:
+Or create a client and give it the client ID:
 
 ```objc
-ImgurHTTPClient *client = [ImgurHTTPClient new]; // Uses client ID from Info.plist
+ImgurAnonymousAPIClient *client = [[ImgurAnonymousAPIClient alloc] initWithClientID:@"YOURIDHERE"];
 ```
 
-Note that the `-uploadImage…` methods return an `NSURLSessionDataTask` which you can use to cancel or suspend the upload:
+Or set the client ID after the client is created:
 
 ```objc
-NSURLSessionDataTask *task = [[ImgurHTTPClient client] uploadImage…
-// Later…
-[task cancel];
+[ImgurAnonymousAPIClient client].clientID = @"YOURIDHERE";
 ```
 
 [register]: https://api.imgur.com
 
+## Alternatives
+
+[ImgurSession][] is a full-featured Imgur API client. It supports the full API, including logging in via OAuth2. It should be your first stop if ImgurAnonymousAPIClient doesn't do what you need.
+
+[ImgurSession]: https://github.com/geoffmacd/ImgurSession
+
 ## Example
 
-There's a functional (i.e. aesthetically displeasing and not very usable) example app for iOS in the [Test App][] folder. It demonstrates how to upload an image from the photo library and how to cancel an upload in progress.
+There's a functional (i.e. aesthetically displeasing and not very usable) example app for iOS in the [Test App][] folder. It demonstrates several different ways to upload an image from the photo library, as well as how to cancel an upload in progress.
 
 [Test App]: Test%20App
 
 ## Why
 
-Uploading to Imgur is handy, but handling all the possible errors is a huge pain. ImgurHTTPClient wraps it all up.
+Uploading to Imgur is handy, but handling all the possible errors is a huge pain. Plus resizing images to fit the maximum file size can get hairy. ImgurAnonymousAPIClient wraps it all up.
+
+[AFNetworking]: https://github.com/AFNetworking/AFNetworking#how-to-get-started
