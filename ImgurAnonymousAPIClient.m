@@ -320,11 +320,15 @@ static NSString * MIMETypeForFilename(NSString *filename)
     return CFBridgingRelease(MIMEType);
 }
 
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
+
 static BOOL FilenameSuggestsJPEG(NSString *filename)
 {
     NSString *UTI = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)filename.pathExtension, nil));
     return UTTypeConformsTo((__bridge  CFStringRef)UTI, kUTTypeJPEG);
 }
+
+#endif
 
 - (NSURLSessionUploadTask *)resumedUploadTaskWithBodyBlock:(void (^)(id <AFMultipartFormData>))bodyBlock
                                          completionHandler:(void (^)(NSURL *imgurURL, NSError *error))completionHandler
