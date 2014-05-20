@@ -3,7 +3,6 @@
 //  Public domain. https://github.com/nolanw/ImgurAnonymousAPIClient
 
 #import <Foundation/Foundation.h>
-#import <Availability.h>
 
 /**
  * An ImgurAnonymousAPIClient anonymously uploads images to Imgur.
@@ -36,7 +35,7 @@
  */
 + (instancetype)client;
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
 
 /**
  * Anonymously uploads an image to Imgur, rotating and resizing the image as needed to keep it under the maximum file size.

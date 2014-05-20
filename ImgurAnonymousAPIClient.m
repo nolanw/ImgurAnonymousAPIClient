@@ -5,7 +5,7 @@
 #import "ImgurAnonymousAPIClient.h"
 #import <ImageIO/ImageIO.h>
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
     #import <AssetsLibrary/AssetsLibrary.h>
     #import <MobileCoreServices/MobileCoreServices.h>
 #else
@@ -140,7 +140,7 @@
     return [_session uploadProgressForTask:task];
 }
 
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
 
 - (NSProgress *)uploadImage:(UIImage *)image
                withFilename:(NSString *)filename
@@ -433,6 +433,8 @@ static BOOL FilenameSuggestsJPEG(NSString *filename)
 
 @end
 
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
+
 @interface ImgurAssetInputStream ()
 
 @property (assign, nonatomic) NSStreamStatus streamStatus;
@@ -520,6 +522,8 @@ static BOOL FilenameSuggestsJPEG(NSString *filename)
 }
 
 @end
+
+#endif
 
 NSString * const ImgurAnonymousAPIClientInfoPlistClientIDKey = @"ImgurAnonymousAPIClientID";
 
