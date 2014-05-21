@@ -49,7 +49,7 @@ If you use CocoaPods, you can add to your `Podfile`:
 pod 'ImgurAnonymousAPIClient', :git => 'https://github.com/nolanw/ImgurAnonymousAPIClient.git', :tag => 'v0.1'
 ```
 
-Otherwise, the client is contained within the `ImgurAnonymousAPIClient.h` and `ImgurAnonymousAPIClient.m` files. Simply copy those two files into your project. You'll need to [install AFNetworking][AFNetworking] as well, if you aren't using it already. Finally, be sure to link against `ImageIO` and either `AssetsLibrary` and `MobileCoreServices` (on iOS) or `CoreServices` (on OS X).
+Otherwise, the client is contained within the `ImgurAnonymousAPIClient.h` and `ImgurAnonymousAPIClient.m` files. Simply copy those two files into your project. You'll need to [install AFNetworking][AFNetworking] as well (version 2.2.2 or higher), if you aren't using it already. Finally, be sure to link against `ImageIO` and either `AssetsLibrary` and `MobileCoreServices` (on iOS) or `CoreServices` (on OS X).
 
 Once you're all set, you need an Imgur API client ID. This is a requirement for using the Imgur API, which is what ImgurAnonymousAPIClient uses. Be sure to [register your application][register] and get the client ID.
 
