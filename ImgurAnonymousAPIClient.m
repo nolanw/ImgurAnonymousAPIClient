@@ -25,6 +25,8 @@
 
 @end
 
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
+
 /**
  * An ImgurAssetInputStream streams a representation of an ALAsset.
  */
@@ -44,6 +46,7 @@
 
 @end
 
+#endif
 
 @implementation ImgurAnonymousAPIClient
 {
