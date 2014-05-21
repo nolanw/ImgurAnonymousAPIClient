@@ -46,7 +46,7 @@ NSData *data = UIImageJPEGRepresentation(myImage, 0.9);
 If you use CocoaPods, you can add to your `Podfile`:
 
 ```
-pod 'ImgurAnonymousAPIClient', :git => 'https://github.com/nolanw/ImgurAnonymousAPIClient.git', :tag => 'v0.1'
+pod 'ImgurAnonymousAPIClient', :git => 'https://github.com/nolanw/ImgurAnonymousAPIClient.git', :tag => 'v0.1.1'
 ```
 
 Otherwise, the client is contained within the `ImgurAnonymousAPIClient.h` and `ImgurAnonymousAPIClient.m` files. Simply copy those two files into your project. You'll need to [install AFNetworking][AFNetworking] as well (version 2.2.2 or higher), if you aren't using it already. Finally, be sure to link against `ImageIO` and either `AssetsLibrary` and `MobileCoreServices` (on iOS) or `CoreServices` (on OS X).
