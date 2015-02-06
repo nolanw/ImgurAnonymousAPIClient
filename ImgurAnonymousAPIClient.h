@@ -3,6 +3,9 @@
 //  Public domain. https://github.com/nolanw/ImgurAnonymousAPIClient
 
 #import <Foundation/Foundation.h>
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
+    #import <UIKit/UIKit.h>
+#endif
 
 /**
  * An ImgurAnonymousAPIClient anonymously uploads images to Imgur.
