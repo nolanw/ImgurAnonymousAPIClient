@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name = "ImgurAnonymousAPIClient"
-  s.version = "0.3"
+  s.version = "0.3.1"
   s.license = "Public domain"
   s.summary = "An anonymous Imgur image uploader"
   s.homepage = "https://github.com/nolanw/ImgurAnonymousAPIClient"
   s.author = "Nolan Waite"
-  s.source = {:git => "https://github.com/nolanw/ImgurAnonymousAPIClient.git", :tag => "v0.3"}
+  s.source = {:git => "https://github.com/nolanw/ImgurAnonymousAPIClient.git", :tag => "v0.3.1"}
   s.source_files = "ImgurAnonymousAPIClient.[hm]"
   s.requires_arc = true
   
