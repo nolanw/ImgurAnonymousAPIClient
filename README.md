@@ -1,3 +1,5 @@
+**No further work will be done here!** Please see the successor library, [ImgurAnonymousAPI](https://github.com/nolanw/ImgurAnonymousAPI).
+
 # ImgurAnonymousAPIClient
 
 An anonymous Imgur image uploader.
